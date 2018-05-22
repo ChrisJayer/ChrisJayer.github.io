@@ -87,10 +87,17 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="前言工作后发现和linux打交道都只限于在服务器上看看线程、查查日志等简单操作，越发觉得对linux的了解过于匮乏。考虑到之后可能会更多地直面linux，觉得还是有必要，也是时候把linux捡起来了。  虽然计划买个云服务器自己捣鼓捣鼓，但是因为并没有拿得出手的项目，也只能先作罢。 家里自用的thinkpad之前装过桥接的readhat的虚拟机，可以考虑作为破产版的服务器练练手；那么就需要支持公网">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-05-21T09:56:45.000Z">
+<meta property="og:image" content="http://yoursite.com/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/eth0-cfg.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/host-ip-cfg.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/network_router.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/telecom_map.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/huawei_map.png">
+<meta property="og:image" content="http://yoursite.com/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/ssh.png">
+<meta property="og:updated_time" content="2018-05-22T05:11:11.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="利用路由器端口映射+桥接虚拟机搭建个人服务器">
 <meta name="twitter:description" content="前言工作后发现和linux打交道都只限于在服务器上看看线程、查查日志等简单操作，越发觉得对linux的了解过于匮乏。考虑到之后可能会更多地直面linux，觉得还是有必要，也是时候把linux捡起来了。  虽然计划买个云服务器自己捣鼓捣鼓，但是因为并没有拿得出手的项目，也只能先作罢。 家里自用的thinkpad之前装过桥接的readhat的虚拟机，可以考虑作为破产版的服务器练练手；那么就需要支持公网">
+<meta name="twitter:image" content="http://yoursite.com/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/eth0-cfg.png">
 
 
 
@@ -304,12 +311,20 @@
 </blockquote>
 <p>虽然计划买个云服务器自己捣鼓捣鼓，但是因为并没有拿得出手的项目，也只能先作罢。</p>
 <p>家里自用的thinkpad之前装过桥接的readhat的虚拟机，可以考虑作为破产版的服务器练练手；那么就需要支持公网访问并配置ssh，方便不在家的时候也ssh到虚拟机上。</p>
-<p>整体搭建思路如下：<br>    thinkpad安装值守的teamviewer并长时间待机，虚拟机可不启动；当有需要的通过teamviewer远程到thinkpad上启动虚拟机。<br>另外通过家用路由器端口映射功能把虚拟机开放到公网上可访问。那么家用的笔记本也能充当所谓的“云”服务器啦。</p>
+<p>整体搭建思路如下：<br><blockquote><p>thinkpad安装值守的teamviewer并长时间待机，虚拟机可不启动；当有需要的通过teamviewer远程到thinkpad上启动虚拟机。<br>另外通过家用路由器端口映射功能把虚拟机开放到公网上可访问。那么家用的笔记本也能充当所谓的“云”服务器啦。</p>
+</blockquote></p>
 <p>首先，对虚拟机进行网络设置，设置为桥接模式（具体方法请自行查阅资料），并将虚拟机ip地址通过静态设置固定下来，方便后续进行网络转发。</p>
-<p>其次，设置家用路由器进行端口映射。办理的宽带是电信网，安装宽带时自带网关，并另外买了一个华为路由器接入电信网关。<br>所以端口映射需要进行两步映射：<br>    a. 公网映射到华为路由器的子网<br>    b. 华为路由器子网再映射到虚拟机</p>
-<p>端口映射暂时只映射ssh协议的启用端口22。</p>
+<p>通过以下命令修改eth0的ip配置<br><blockquote><p>注意：虚拟机配置网关和掩码需要和宿主机一致，保证两者在同一个子网中</p>
+</blockquote><br><figure class="highlight plain"><figcaption><span>shell</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /etc/sysconfig/network-scripts/ifcfg-eth0</span><br></pre></td></tr></table></figure></p>
+<p>以下是虚拟机上以及宿主机的ip配置信息<br><img src="/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/eth0-cfg.png" title="虚拟机网络配置"><br><img src="/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/host-ip-cfg.png" title="宿主机网络配置"></p>
+<p>虚拟机上通过IPADDR和GATEWAY确定了固定ip和网关，重启网络后即可生效<br><figure class="highlight plain"><figcaption><span>shell</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service network restart</span><br></pre></td></tr></table></figure></p>
+<p>当前配置下，从ip资源来看，虚拟机完全和宿主机处于平等地位了；通过其ip即可访问虚拟机上的相关资源了。</p>
+<p>其次，设置家用路由器进行端口映射。办理的宽带是电信网，安装宽带时自带网关，并另外买了一个华为路由器接入电信网关。自用的thinkpad连接华为路由器wifi。<br>那么整体的网络拓扑如下（电信网关的wan ip即为公网ip）：<br><img src="/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/network_router.png" title="网络拓扑"></p>
+<p>所以端口映射需要进行两步映射：<br>    a. 电信网关映射到华为路由器，即 telecom -&gt; huawei<br>    b. 华为路由器再映射到虚拟机，即 huawei -&gt; vm</p>
+<p>端口映射暂时只映射ssh协议的启用端口22，后续需要支持服务器其他功能时再另外添加。</p>
 <p>查看路由器的管理台程序，具体信息（包括ip、登录名密码等）都在路由器上，查看后发现电信网关和华为路由器的管理台程序地址各自为<br>192.168.1.1<br>192.168.3.1</p>
-<p>分别登录后查看路由器支持功能，端口映射功能基本都有，然后查看两个路由器的wan ip 和local ip进行端口映射。</p>
+<p>分别登录后查看路由器支持功能，端口映射功能基本都有，然后查看两个路由器的wan ip 和local ip进行端口映射。<br>映射配置如下（分别为电信网关和华为路由器）：<br><img src="/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/telecom_map.png" title="电信网关端口映射"><br><img src="/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/huawei_map.png" title="华为路由器端口映射"></p>
+<p>配置好后，在远程终端上进行ssh尝试，显示成功，大功告成！<br><img src="/2018/05/21/利用路由器端口映射-桥接虚拟机搭建个人服务器/ssh.png" title="连接成功"></p>
 
       
     </div>
